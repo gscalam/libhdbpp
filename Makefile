@@ -3,7 +3,7 @@ TANGO_INC = /usr/local/tango-9.2.2/include/tango
 ZEROMQ_INC = /usr/local/zeromq-4.0.7/include
 
 
-CXXFLAGS += -Wall -DRELEASE='"$HeadURL: svn+ssh://scalamera@svn.code.sf.net/p/tango-cs/code/archiving/hdb++/libhdb++/trunk/Makefile $ "' -I$(TANGO_INC) -I$(OMNI_INC) -I$(ZEROMQ_INC)
+CXXFLAGS += -std=gnu++0x -Wall -DRELEASE='"$HeadURL: svn+ssh://scalamera@svn.code.sf.net/p/tango-cs/code/archiving/hdb++/libhdb++/trunk/Makefile $ "' -I$(TANGO_INC) -I$(OMNI_INC) -I$(ZEROMQ_INC)
 CXX = g++
 
 
