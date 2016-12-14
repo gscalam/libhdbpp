@@ -1,5 +1,7 @@
+OMNI_INC = /usr/local/omniorb-4.2.1/include
+TANGO_INC = /usr/local/tango-9.2.2/include/tango
+ZEROMQ_INC = /usr/local/zeromq-4.0.7/include
 
-include ../../Make-hdb++.in
 
 CXXFLAGS += -Wall -DRELEASE='"$HeadURL: svn+ssh://scalamera@svn.code.sf.net/p/tango-cs/code/archiving/hdb++/libhdb++/trunk/Makefile $ "' -I$(TANGO_INC) -I$(OMNI_INC) -I$(ZEROMQ_INC)
 CXX = g++
@@ -30,7 +32,7 @@ SHLIB         = $(BASELIBNAME).$(SHLIB_SUFFIX)
 .PHONY : install clean
 
 lib/LibHdb++: lib obj obj/LibHdb++.o
-	$(CXX) obj/LibHdb++.o $(SHLDFLAGS) $(LFLAGS_SONAME)$(DT_SONAME) -l$(LIBHDBIMPL) -L$(LIBHDBIMPL_LIB) -o lib/$(DT_SHLIB)
+	$(CXX) obj/LibHdb++.o $(SHLDFLAGS) $(LFLAGS_SONAME)$(DT_SONAME) -o lib/$(DT_SHLIB)
 	ln -sf $(DT_SHLIB) lib/$(SHLIB)
 	ln -sf $(SHLIB) lib/$(DT_SONAME)
 	ar rcs lib/$(LIBRARY) obj/LibHdb++.o
