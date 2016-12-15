@@ -33,6 +33,7 @@
 //=============================================================================
 
 #include "LibHdb++.h"
+#include <dlfcn.h>
 
 #ifndef LIB_BUILDTIME
 #define LIB_BUILDTIME   RELEASE " " __DATE__ " "  __TIME__
@@ -44,13 +45,51 @@ static const char __FILE__rev[] = __FILE__ " $Id: 1.6 $";
 
 HdbClient::HdbClient(vector<string> configuration)
 {
-		db_factory = getDBFactory();
-		db = db_factory->create_db(configuration);
-		if(db == NULL)
+	map<string,string> db_conf;
+	string_vector2map(configuration,"=",&db_conf);
+	string libname;
+	try
+	{
+		libname = db_conf.at("libname");
+	}
+	catch(const std::out_of_range& e)
+	{
+		stringstream tmp;
+		tmp << "Configuration parsing error looking for key 'libname='";
+		cout << __func__<<": VERSION: " << version_string << " file:" << __FILE__rev << endl;
+		cout << __func__<< ": " << tmp.str() << endl;
+		exit(1);
+	}
+
+    if (void* hModule = dlopen(libname.c_str(), RTLD_NOW))
+    {
+        if (getDBFactory_t* create = (getDBFactory_t*)dlsym(hModule, "getDBFactory"))
+        {
+			db_factory = create();
+			db = db_factory->create_db(configuration);
+			if(db == NULL)
+			{
+				cout << __func__<<": VERSION: " << version_string << " file:" << __FILE__rev << endl;
+				cout << __func__<<": Error creating db" << endl;
+				exit(1);
+			}
+        }
+        else
 		{
 			cout << __func__<<": VERSION: " << version_string << " file:" << __FILE__rev << endl;
-			cout << __func__<<": Error creating db" << endl;
+			cout << __func__<<": Error loading symbol getDBFactory from library " << libname << endl;
+			exit(1);
 		}
+
+        dlclose(hModule);
+    }
+    else
+    {
+		db = NULL;
+		cout << __func__<<": VERSION: " << version_string << " file:" << __FILE__rev << endl;
+		cout << __func__<<": Error loading library " << libname << endl;
+		exit(1);
+    }
 }
 
 int HdbClient::insert_Attr(Tango::EventData *data, HdbEventDataType ev_data_type)
@@ -77,4 +116,32 @@ HdbClient::~HdbClient()
 {
 	delete db;
 	delete db_factory;
+}
+
+void HdbClient::string_explode(string str, string separator, vector<string>* results)
+{
+	string::size_type found;
+
+	found = str.find_first_of(separator);
+	while(found != string::npos) {
+		if(found > 0) {
+			results->push_back(str.substr(0,found));
+		}
+		str = str.substr(found+1);
+		found = str.find_first_of(separator);
+	}
+	if(str.length() > 0) {
+		results->push_back(str);
+	}
+}
+
+void HdbClient::string_vector2map(vector<string> str, string separator, map<string,string>* results)
+{
+	for(vector<string>::iterator it=str.begin(); it != str.end(); it++)
+	{
+		string::size_type found_eq;
+		found_eq = it->find_first_of(separator);
+		if(found_eq != string::npos && found_eq > 0)
+			results->insert(make_pair(it->substr(0,found_eq),it->substr(found_eq+1)));
+	}
 }
