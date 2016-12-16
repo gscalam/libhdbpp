@@ -101,7 +101,8 @@ private:
 	AbstractDB *db;
 	DBFactory *db_factory;
 
-	DBFactory *getDBFactory();
+	void string_explode(string str, string separator, vector<string>* results);
+	void string_vector2map(vector<string> str, string separator, map<string,string>* results);
 
 public:
 	HdbClient(vector<string> configuration);
@@ -118,7 +119,11 @@ public:
 
 };
 
-
+extern "C"
+{
+	typedef DBFactory * getDBFactory_t();
+    DBFactory *getDBFactory();
+}
 
 
 #endif
