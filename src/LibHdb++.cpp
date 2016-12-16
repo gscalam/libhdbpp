@@ -61,11 +61,11 @@ HdbClient::HdbClient(vector<string> configuration)
 		exit(1);
 	}
 
-    if (void* hModule = dlopen(libname.c_str(), RTLD_NOW))
+    if (hLib = dlopen(libname.c_str(), RTLD_NOW/*|RTLD_GLOBAL*/))
     {
-        if (getDBFactory_t* create = (getDBFactory_t*)dlsym(hModule, "getDBFactory"))
+        if (getDBFactory_t* create_factory = (getDBFactory_t*)dlsym(hLib, "getDBFactory"))
         {
-			db_factory = create();
+			db_factory = create_factory();
 			db = db_factory->create_db(configuration);
 			if(db == NULL)
 			{
@@ -80,8 +80,6 @@ HdbClient::HdbClient(vector<string> configuration)
 			cout << __func__<<": Error loading symbol getDBFactory from library " << libname << endl;
 			exit(1);
 		}
-
-        dlclose(hModule);
     }
     else
     {
@@ -116,6 +114,7 @@ HdbClient::~HdbClient()
 {
 	delete db;
 	delete db_factory;
+	dlclose(hLib);
 }
 
 void HdbClient::string_explode(string str, string separator, vector<string>* results)

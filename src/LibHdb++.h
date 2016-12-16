@@ -100,6 +100,7 @@ class HdbClient
 private:
 	AbstractDB *db;
 	DBFactory *db_factory;
+	void* hLib;
 
 	void string_explode(string str, string separator, vector<string>* results);
 	void string_vector2map(vector<string> str, string separator, map<string,string>* results);
